@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Optional build with the .NET SDK (Visual Studio 2022 / `dotnet build -c Release`).
+    The default build (build.ps1) needs no SDK: it uses the C# compiler that ships with Windows.
+    Set PlayniteDir if Playnite is not installed in D:\Playnite.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net462</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <LangVersion>5</LangVersion>
+    <AssemblyName>BDSoftPS2Store</AssemblyName>
+    <RootNamespace>BDSoftPS2Store</RootNamespace>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EnableDefaultPageItems>false</EnableDefaultPageItems>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <PlayniteDir Condition="'$(PlayniteDir)' == ''">D:\Playnite</PlayniteDir>
+    <OutputPath>build\sdk\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="Playnite.SDK">
+      <HintPath>$(PlayniteDir)\Playnite.SDK.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="src\BDSoftPS2StorePlugin.cs" />
+    <Compile Include="src\Models.cs" />
+    <Compile Include="src\Services.cs" />
+    <Compile Include="src\Gamepad.cs" />
+    <Compile Include="src\StoreController.cs" />
+    <Compile Include="src\StorePreviewControl.cs" />
+    <Compile Include="src\StoreTileControl.cs" />
+    <Compile Include="src\UiSounds.cs" />
+    <Compile Include="src\DeveloperWindow.cs" />
+    <Compile Include="src\ThemeIntegration.cs" />
+    <None Include="src\assets\developer.jpg" CopyToOutputDirectory="PreserveNewest" Link="assets\developer.jpg" />
+    <EmbeddedResource Include="src\StoreView.xaml" LogicalName="BDSoftPS2Store.StoreView.xaml" />
+    <None Include="src\extension.yaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="src\catalog.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="src\icon.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
