@@ -26,6 +26,8 @@ The store **never downloads games**. You link game files you own.
 - **Add to library** with metadata and cover, **Find game** to link your own ISO/CHD/CSO and set up the PCSX2 play action.
 - **"Kur" button** opens a per-game web page (`externalUrl`) you define in `games.json`.
 - **Controller, keyboard and mouse** support (tested with an 8BitDo pad).
+- **Home-screen backgrounds** for every PS2 game in your library: fan art and logo from TheGamesDB, or a PS5-style background made from the cover. Added automatically, also for games added from the store.
+- **One-click theme integration** for PS5ish, with backup and restore.
 - **Developer screen** in the Extensions menu.
 
 ## Screenshots
@@ -62,6 +64,53 @@ Open the PlayStation Store tile in fullscreen mode. To undo the theme changes: *
 ```
 
 "Kur" opens `externalUrl` in your default browser (nothing is downloaded or run). Matching is by `id`, then `serial`, then `name`. `cover` overrides the cover. Your values are never overwritten.
+
+## Extensions menu
+
+*Extensions → BD Soft PS2 Store*:
+
+| Menu item | What it does |
+|---|---|
+| Mağazayı aç | Open the store (fullscreen: the theme's Store page) |
+| Mağazada ara | Search the catalog |
+| PS2 arka planlarını yeniden oluştur | Rebuild the home-screen backgrounds made by the extension |
+| PS5ish temasına entegre et | Wire the store into the PS5ish theme (backup is kept) |
+| Tema entegrasyonunu geri al | Restore the original theme files |
+| Geliştirici · codermert | Developer screen |
+
+## FAQ
+
+**Does it download games?**
+No. The store shows a catalog. You link game files you own with *Oyunu bul* (Find game), and "Kur" only opens the web page you set in `games.json`.
+
+**Which emulator does "Play" use?**
+The first emulator profile in Playnite that supports PlayStation 2 (for example PCSX2). Add PCSX2 under *Library → Emulators* if you have none.
+
+**Do I need the PS5ish theme?**
+The store page lives inside the PS5ish fullscreen theme. In desktop mode the store opens in its own window, without the theme.
+
+**Do I need DKG Theme Modifier?**
+No. After the theme integration the Store tile belongs to this extension.
+
+**Where are my settings?**
+`%APPDATA%\Playnite\ExtensionsData\9411ebc2-4eeb-439b-84a2-ca7011456b22\` (`games.json`, `favorites.json`, cache, theme backup).
+
+## Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| The Store tile shows the old God of War picture | Run *PS5ish temasına entegre et* and restart Playnite. |
+| The theme looks broken after an update of PS5ish | Run *PS5ish temasına entegre et* again. |
+| A game has a wrong home background | *PS2 arka planlarını yeniden oluştur*, or remove the background in Playnite's game editor. |
+| "Bu oyun için harici bağlantı tanımlanmamış" | Fill `externalUrl` for that game in `games.json`. |
+| Covers do not load | Covers and descriptions need an internet connection the first time; they are cached afterwards. |
+| I want the original theme back | *Tema entegrasyonunu geri al*, then restart Playnite. |
+
+## Roadmap
+
+- English UI (the UI is Turkish in this beta)
+- More controller actions on the store page
+- Settings page (sounds, row size, data sources)
 
 ## Build from source
 
