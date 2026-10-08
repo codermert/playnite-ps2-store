@@ -54,7 +54,7 @@ if (-not (Test-Path $icon)) {
     $bmp.Dispose()
 }
 
-$sources = @('BDSoftPS2StorePlugin.cs', 'Models.cs', 'Services.cs', 'Gamepad.cs', 'StoreController.cs', 'StorePreviewControl.cs', 'StoreTileControl.cs', 'UiSounds.cs', 'DeveloperWindow.cs', 'ThemeIntegration.cs') | ForEach-Object { Join-Path $src $_ }
+$sources = @('BDSoftPS2StorePlugin.cs', 'Models.cs', 'Services.cs', 'Gamepad.cs', 'StoreController.cs', 'StorePreviewControl.cs', 'StoreTileControl.cs', 'UiSounds.cs', 'DeveloperWindow.cs', 'ThemeIntegration.cs', 'Backgrounds.cs') | ForEach-Object { Join-Path $src $_ }
 $refs = @(
     $sdk,
     (Join-Path $fx 'System.dll'),
@@ -62,6 +62,7 @@ $refs = @(
     (Join-Path $fx 'System.Xaml.dll'),
     (Join-Path $fx 'System.Xml.dll'),
     (Join-Path $fx 'System.Runtime.Serialization.dll'),
+    (Join-Path $fx 'System.Drawing.dll'),
     (Join-Path $fx 'WPF\PresentationCore.dll'),
     (Join-Path $fx 'WPF\PresentationFramework.dll'),
     (Join-Path $fx 'WPF\WindowsBase.dll')

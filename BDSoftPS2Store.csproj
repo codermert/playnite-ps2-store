@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Drawing" />
     <Reference Include="Playnite.SDK">
       <HintPath>$(PlayniteDir)\Playnite.SDK.dll</HintPath>
       <Private>false</Private>
@@ -41,6 +42,7 @@
     <Compile Include="src\UiSounds.cs" />
     <Compile Include="src\DeveloperWindow.cs" />
     <Compile Include="src\ThemeIntegration.cs" />
+    <Compile Include="src\Backgrounds.cs" />
     <None Include="src\assets\developer.jpg" CopyToOutputDirectory="PreserveNewest" Link="assets\developer.jpg" />
     <EmbeddedResource Include="src\StoreView.xaml" LogicalName="BDSoftPS2Store.StoreView.xaml" />
     <None Include="src\extension.yaml" CopyToOutputDirectory="PreserveNewest" />
