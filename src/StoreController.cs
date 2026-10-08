@@ -81,6 +81,9 @@ namespace BDSoftPS2Store
         }
 
         public List<StoreTab> Tabs { get; private set; }
+
+        // Creates home-screen backgrounds for games added to the library (set by the plugin).
+        public BackgroundService Backgrounds { get; set; }
         public ICommand OpenDetailCommand { get; private set; }
         public ICommand CloseDetailCommand { get; private set; }
         public ICommand ToggleFavoriteCommand { get; private set; }
@@ -670,6 +673,10 @@ namespace BDSoftPS2Store
                 var libGame = library.AddToLibrary(game, covers.GetCachedPath(game));
                 game.LibraryGameId = libGame.Id;
                 game.IsPlayable = false;
+                if (Backgrounds != null)
+                {
+                    Backgrounds.Request(libGame.Id);
+                }
                 StatusText = "Kütüphaneye eklendi. Oynamak için \"Oyunu Bul\" ile kendi oyun dosyanı seç.";
                 CommandManager.InvalidateRequerySuggested();
                 return libGame;

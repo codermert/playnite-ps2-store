@@ -24,6 +24,7 @@ namespace BDSoftPS2Store
 
         private static readonly ILogger logger = LogManager.GetLogger();
         private StoreController store;
+        private BackgroundService backgrounds;
 
         public override Guid Id
         {
@@ -59,8 +60,18 @@ namespace BDSoftPS2Store
             {
                 string pluginDir = Path.GetDirectoryName(GetType().Assembly.Location);
                 store = new StoreController(PlayniteApi, pluginDir, GetPluginUserDataPath());
+                store.Backgrounds = GetBackgrounds();
             }
             return store;
+        }
+
+        private BackgroundService GetBackgrounds()
+        {
+            if (backgrounds == null)
+            {
+                backgrounds = new BackgroundService(PlayniteApi, GetPluginUserDataPath(), Application.Current.Dispatcher);
+            }
+            return backgrounds;
         }
 
         public override Control GetGameViewControl(GetGameViewControlArgs args)
@@ -83,6 +94,24 @@ namespace BDSoftPS2Store
             {
                 Application.Current.Dispatcher.BeginInvoke(new Action(OpenStore));
             });
+
+            // PS2 games without a home-screen background (e.g. added from the store) get one,
+            // a little after start-up so Playnite opens without delay.
+            var startTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(8) };
+            startTimer.Tick += (s, e) =>
+            {
+                startTimer.Stop();
+                try
+                {
+                    GetBackgrounds().UpgradeIfNeeded();
+                    GetBackgrounds().FillMissing();
+                }
+                catch (Exception ex)
+                {
+                    logger.Warn(ex, "Background check failed");
+                }
+            };
+            startTimer.Start();
 
             // First run with the PS5ish theme: offer the one-click theme integration.
             string config = PlayniteApi.Paths.ConfigurationPath;
@@ -151,6 +180,18 @@ namespace BDSoftPS2Store
                 Description = "Mağazada ara",
                 Icon = icon,
                 Action = a => OpenSearch()
+            };
+            yield return new MainMenuItem
+            {
+                MenuSection = "@BD Soft PS2 Store",
+                Description = "PS2 arka planlarını yeniden oluştur",
+                Icon = icon,
+                Action = a =>
+                {
+                    int count = GetBackgrounds().RegenerateAll();
+                    GetBackgrounds().FillMissing();
+                    PlayniteApi.Dialogs.ShowMessage(count + " arka plan yeniden oluşturuluyor. Eksik olanlar da tamamlanıyor.", "BD Soft PS2 Store");
+                }
             };
             yield return new MainMenuItem
             {
