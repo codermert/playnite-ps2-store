@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using Playnite.SDK;
+using Playnite.SDK.Data;
 using Playnite.SDK.Models;
 
 namespace BDSoftPS2Store
@@ -97,6 +98,109 @@ namespace BDSoftPS2Store
             {
                 Request(id);
             }
+        }
+
+        // PS2 library games without a cover (Playnite's scanner found no metadata for them) leave an
+        // empty slot in the home row: they get the PCSX2 community cover of the matching catalog game.
+        public void FillMissingCovers(string pluginDir)
+        {
+            var platform = api.Database.Platforms.FirstOrDefault(p => p.SpecificationId == LibraryService.PlatformSpecId);
+            if (platform == null)
+            {
+                return;
+            }
+            var games = api.Database.Games
+                .Where(g => g.PlatformIds != null && g.PlatformIds.Contains(platform.Id) && string.IsNullOrEmpty(g.CoverImage))
+                .Select(g => new KeyValuePair<Guid, string>(g.Id, g.Name))
+                .ToList();
+            if (games.Count == 0)
+            {
+                return;
+            }
+            Task.Run(() =>
+            {
+                try
+                {
+                    var entries = (Serialization.FromJsonFile<List<CatalogEntry>>(Path.Combine(pluginDir, "catalog.json")) ?? new List<CatalogEntry>())
+                        .Where(e => !string.IsNullOrEmpty(e.Serial) && !string.IsNullOrWhiteSpace(e.Title))
+                        .ToList();
+                    string coverDir = Path.Combine(Path.GetDirectoryName(cacheDir), "covers");
+                    Directory.CreateDirectory(coverDir);
+                    foreach (var pair in games)
+                    {
+                        var entry = MatchCatalog(entries, pair.Value);
+                        if (entry == null)
+                        {
+                            logger.Info("No catalog match for the missing cover of " + pair.Value);
+                            continue;
+                        }
+                        string file = Path.Combine(coverDir, entry.Serial + ".jpg");
+                        if (!File.Exists(file))
+                        {
+                            try
+                            {
+                                using (var client = Http.CreateClient())
+                                {
+                                    File.WriteAllBytes(file, client.DownloadData(string.Format(SerialCoverUrl, entry.Serial)));
+                                }
+                            }
+                            catch (WebException)
+                            {
+                                logger.Info("No community cover for " + pair.Value + " (" + entry.Serial + ")");
+                                continue;
+                            }
+                        }
+                        Guid id = pair.Key;
+                        dispatcher.Invoke(new Action(() =>
+                        {
+                            var current = api.Database.Games.Get(id);
+                            if (current != null && string.IsNullOrEmpty(current.CoverImage))
+                            {
+                                current.CoverImage = api.Database.AddFile(file, id);
+                                api.Database.Games.Update(current);
+                            }
+                        }));
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.Warn(e, "Missing covers could not be filled");
+                }
+            });
+        }
+
+        private const string SerialCoverUrl = "https://raw.githubusercontent.com/xlenore/ps2-covers/main/covers/default/{0}.jpg";
+        private static readonly Regex TitleBrackets = new Regex(@"\[[^\]]*\]|\([^\)]*\)", RegexOptions.Compiled);
+
+        private static HashSet<string> TitleTokens(string title)
+        {
+            string s = TitleBrackets.Replace(title.ToLowerInvariant(), " ");
+            return new HashSet<string>(Regex.Split(s, "[^a-z0-9]+").Where(t => t.Length > 0));
+        }
+
+        // Same title first; otherwise the catalog title with the most words that are all in the library
+        // name ("PES 2014 - Pro Evolution Soccer" -> "Pro Evolution Soccer 2014").
+        private static CatalogEntry MatchCatalog(List<CatalogEntry> entries, string name)
+        {
+            string wanted = TitleNormalizer.Normalize(name);
+            var exact = entries.FirstOrDefault(e => TitleNormalizer.Normalize(e.Title) == wanted);
+            if (exact != null)
+            {
+                return exact;
+            }
+            var tokens = TitleTokens(name);
+            CatalogEntry best = null;
+            int bestCount = 1;
+            foreach (var entry in entries)
+            {
+                var entryTokens = TitleTokens(entry.Title);
+                if (entryTokens.Count > bestCount && entryTokens.IsSubsetOf(tokens))
+                {
+                    best = entry;
+                    bestCount = entryTokens.Count;
+                }
+            }
+            return best;
         }
 
         public void Request(Guid gameId)

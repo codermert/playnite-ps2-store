@@ -2,7 +2,10 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Markup;
+using System.Windows.Threading;
 using Playnite.SDK.Controls;
 
 namespace BDSoftPS2Store
@@ -123,6 +126,7 @@ namespace BDSoftPS2Store
                 {
                     tileImage.Source = CoverService.LoadImage(iconPath, 210);
                 }
+                HookAllGamesTile(Window.GetWindow(button));
             };
 
             // Playnite turns controller input into key presses for the focused element (this tile).
@@ -145,6 +149,59 @@ namespace BDSoftPS2Store
                 }
             };
             Content = button;
+        }
+
+        private static ToggleButton hookedAllGames;
+
+        // The theme's "All Games" tile (MoreGames) only opens the library grid on A, and Down does
+        // nothing while it is focused. Down now opens the grid and moves focus into it.
+        private static void HookAllGamesTile(Window window)
+        {
+            if (window == null)
+            {
+                return;
+            }
+            var allGames = StorePreviewControl.FindByName(window, "MoreGames") as ToggleButton;
+            if (allGames == null || allGames == hookedAllGames)
+            {
+                return;
+            }
+            hookedAllGames = allGames;
+            allGames.PreviewKeyDown += (s, e) =>
+            {
+                if (e.Key != Key.Down)
+                {
+                    return;
+                }
+                if (allGames.IsChecked != true)
+                {
+                    allGames.IsChecked = true;
+                }
+                e.Handled = true;
+                // Grid items become focusable through theme triggers: focus after they are applied.
+                allGames.Dispatcher.BeginInvoke(new Action(() => FocusGameGrid(window)), DispatcherPriority.Loaded);
+            };
+        }
+
+        private static void FocusGameGrid(Window window)
+        {
+            var list = StorePreviewControl.FindByName(window, "PART_ListGameItems") as ListBox;
+            if (list == null || list.Items.Count == 0)
+            {
+                return;
+            }
+            var item = list.ItemContainerGenerator.ContainerFromIndex(0) as ListBoxItem;
+            if (item == null)
+            {
+                list.ScrollIntoView(list.Items[0]);
+                list.UpdateLayout();
+                item = list.ItemContainerGenerator.ContainerFromIndex(0) as ListBoxItem;
+            }
+            if (item != null)
+            {
+                item.Focus();
+                Keyboard.Focus(item);
+            }
         }
 
         private void Activate()

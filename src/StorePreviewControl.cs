@@ -827,7 +827,7 @@ namespace BDSoftPS2Store
             }
         }
 
-        private static FrameworkElement FindByName(DependencyObject parent, string name)
+        internal static FrameworkElement FindByName(DependencyObject parent, string name)
         {
             int count = VisualTreeHelper.GetChildrenCount(parent);
             for (int i = 0; i < count; i++)

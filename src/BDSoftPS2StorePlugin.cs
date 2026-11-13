@@ -105,6 +105,7 @@ namespace BDSoftPS2Store
                 {
                     GetBackgrounds().UpgradeIfNeeded();
                     GetBackgrounds().FillMissing();
+                    GetBackgrounds().FillMissingCovers(Path.GetDirectoryName(GetType().Assembly.Location));
                 }
                 catch (Exception ex)
                 {
