@@ -20,7 +20,7 @@ namespace BDSoftPS2Store
     {
         private const string DeveloperHandle = "codermert";
         private const string GitHubUrl = "https://github.com/codermert";
-        private const string Version = "1.0.0 Beta";
+        private const string Version = "1.0.1 Beta";
 
         private static readonly ILogger logger = LogManager.GetLogger();
 

@@ -89,7 +89,7 @@ if (Test-Path $toolbox) {
 if (-not (Get-ChildItem $dist -Filter '*.pext')) {
     # Fallback: a .pext is a zip archive of the extension folder
     Add-Type -AssemblyName System.IO.Compression.FileSystem
-    $zip = Join-Path $dist 'BDSoftPS2Store_9411ebc2-4eeb-439b-84a2-ca7011456b22_1_0_0.pext'
+    $zip = Join-Path $dist 'BDSoftPS2Store_9411ebc2-4eeb-439b-84a2-ca7011456b22_1_0_1.pext'
     [System.IO.Compression.ZipFile]::CreateFromDirectory($out, $zip)
 }
 Get-ChildItem $dist -Filter '*.pext' | ForEach-Object { Write-Host ("Package: " + $_.FullName) }
